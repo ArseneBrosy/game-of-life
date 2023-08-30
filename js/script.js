@@ -1,7 +1,7 @@
 var canvas = document.getElementById("renderer");
 var ctx = canvas.getContext("2d");
 
-//#region CONSTANTES
+//region CONSTANTES
 const CELLSIZE = 30;
 const PLAYGROUND_WIDTH = 100;
 const PLAYGROUND_HEIGHT = 100;
@@ -11,9 +11,9 @@ const GEN_TIME = 50;
 const c_background = "black";
 const c_grid = "white";
 const c_cells = ["transparent", "white", "blue"];
-//#endregion
+//endregion
 
-//#region VARIABLES
+//region VARIABLES
 var camX = 0;
 var camY = 0;
 
@@ -35,6 +35,8 @@ for (var y = 0; y < PLAYGROUND_HEIGHT; y++) {
     cells.push(newRow);
 }
 
+let gameRunning = false;
+
 /*
 //GLIDER
 cells[2][0] = 1;
@@ -44,7 +46,7 @@ cells[2][1] = 1;
 cells[2][2] = 1;
 */
 
-// GLIDER GUN
+//GLIDER GUN
 cells[1][5] = 1;
 cells[1][6] = 1;
 cells[2][5] = 1;
@@ -88,7 +90,7 @@ cells[35][3] = 1;
 cells[35][4] = 1;
 cells[36][3] = 1;
 cells[36][4] = 1;
-//#endregion
+//endregion
 
 function neighbours(x, y, cell = 1) {
     var count = 0;
@@ -150,7 +152,6 @@ function nextTurn() {
     }
     // deploiement du futur terrain
     cells = newCells;
-    setTimeout(nextTurn, GEN_TIME);
 }
 
 function loop() {
@@ -196,7 +197,8 @@ function loop() {
     requestAnimationFrame(loop);
 }
 requestAnimationFrame(loop);
-setTimeout(nextTurn, GEN_TIME);
+
+let generations;
 
 document.addEventListener("mousemove", (e) => {
     mouseX = e.clientX;
@@ -212,5 +214,19 @@ document.addEventListener("mousedown", (e) => {
 document.addEventListener("mouseup", (e) => {
     if (e.which === 1) {
         mouseLeft = false;
+    }
+});
+
+document.addEventListener("keydown", (e) => {
+    if (e.code === "Space") {
+        gameRunning = !gameRunning;
+        if (gameRunning) {
+            generations = setInterval(nextTurn, GEN_TIME);
+        } else {
+            clearInterval(generations);
+        }
+    }
+    if (e.code === "ArrowRight") {
+        requestAnimationFrame(nextTurn);
     }
 });

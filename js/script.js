@@ -1,5 +1,5 @@
-var canvas = document.getElementById("renderer");
-var ctx = canvas.getContext("2d");
+let canvas = document.getElementById("renderer");
+let ctx = canvas.getContext("2d");
 
 //region CONSTANTES
 const CELLSIZE = 30;
@@ -14,22 +14,24 @@ const c_cells = ["transparent", "white", "blue"];
 //endregion
 
 //region VARIABLES
-var camX = 0;
-var camY = 0;
+let camX = 0;
+let camY = 0;
 
 // souris
-var mouseX = 0;
-var mouseY = 0;
-var mouseLeft = false;
-var mouseCamOffsetX = 0;
-var mouseCamOffsetY = 0;
+let mouseX = 0;
+let mouseY = 0;
+let mouseLeft = false;
+let mouseCamOffsetX = 0;
+let mouseCamOffsetY = 0;
+let mouseCellX;
+let mouseCellY;
 
 // cellules
-var cells = [];
-var newCells = [];
-for (var y = 0; y < PLAYGROUND_HEIGHT; y++) {
-    var newRow = [];
-    for (var x = 0; x < PLAYGROUND_WIDTH; x++) {
+let cells = [];
+let newCells = [];
+for (let y = 0; y < PLAYGROUND_HEIGHT; y++) {
+    let newRow = [];
+    for (let x = 0; x < PLAYGROUND_WIDTH; x++) {
         newRow.push(0);
     }
     cells.push(newRow);
@@ -93,11 +95,11 @@ cells[36][4] = 1;
 //endregion
 
 function neighbours(x, y, cell = 1) {
-    var count = 0;
-    var xMin = -1;
-    var xMax = 1;
-    var yMin = -1;
-    var yMax = 1;
+    let count = 0;
+    let xMin = -1;
+    let xMax = 1;
+    let yMin = -1;
+    let yMax = 1;
     if (x <= 0) {
         xMin = 0;
     }
@@ -110,8 +112,8 @@ function neighbours(x, y, cell = 1) {
     if (y >= PLAYGROUND_HEIGHT -1 ) {
         yMax = 0;
     }
-    for (var offY = yMin; offY <= yMax; offY ++) {
-        for (var offX = xMin; offX <= xMax; offX ++) {
+    for (let offY = yMin; offY <= yMax; offY ++) {
+        for (let offX = xMin; offX <= xMax; offX ++) {
             if (cells[x + offX][y + offY] === cell && !(offX === 0 && offY === 0)) {
                 count ++;
             }
@@ -123,16 +125,16 @@ function neighbours(x, y, cell = 1) {
 function nextTurn() {
     // creation du futur terrain
     newCells = [];
-    for (var y = 0; y < PLAYGROUND_HEIGHT; y++) {
-        var newRow = [];
-        for (var x = 0; x < PLAYGROUND_WIDTH; x++) {
+    for (let y = 0; y < PLAYGROUND_HEIGHT; y++) {
+        let newRow = [];
+        for (let x = 0; x < PLAYGROUND_WIDTH; x++) {
             newRow.push(0);
         }
         newCells.push(newRow);
     }
     // analyse de l'actuel terrain
-    for (var y = 0; y < PLAYGROUND_HEIGHT; y++) {
-        for (var x = 0; x < PLAYGROUND_WIDTH; x++) {
+    for (let y = 0; y < PLAYGROUND_HEIGHT; y++) {
+        for (let x = 0; x < PLAYGROUND_WIDTH; x++) {
             // morte
             if (cells[x][y] === 0) {
                 // naissance
@@ -164,36 +166,41 @@ function loop() {
     if (camX > 0) { camX = 0; }
     if (camY > 0) { camY = 0; }
 
-    //#region AFFICHAGE
+    //region SOURIS
+    mouseCellX = parseInt((mouseX - camX) / CELLSIZE);
+    mouseCellY = parseInt((mouseY - camY) / CELLSIZE);
+    //endregion
+
+    //region AFFICHAGE
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 
-    //#region FOND
+    //region FOND
     ctx.fillStyle = c_background;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
-    //#endregion
+    //endregion
 
-    //#region CELLULES
-    for (var y = 0; y < PLAYGROUND_HEIGHT; y++) {
-        for (var x = 0; x < PLAYGROUND_WIDTH; x++) {
+    //region CELLULES
+    for (let y = 0; y < PLAYGROUND_HEIGHT; y++) {
+        for (let x = 0; x < PLAYGROUND_WIDTH; x++) {
             ctx.fillStyle = c_cells[cells[x][y]];
             ctx.fillRect(camX + x * CELLSIZE, camY + y * CELLSIZE, CELLSIZE, CELLSIZE);
         }
     }
-    //#endregion
+    //endregion
 
-    //#region GRILLE
+    //region GRILLE
     ctx.fillStyle = c_grid;
     // vertical
-    for (var x = camX; x < camX + PLAYGROUND_WIDTH * CELLSIZE; x += CELLSIZE) {
+    for (let x = camX; x < camX + PLAYGROUND_WIDTH * CELLSIZE; x += CELLSIZE) {
         ctx.fillRect(x - 1, camY, 2, PLAYGROUND_HEIGHT * CELLSIZE);
     }
     // horizontal
-    for (var y = camY; y < camY + PLAYGROUND_HEIGHT * CELLSIZE; y += CELLSIZE) {
+    for (let y = camY; y < camY + PLAYGROUND_HEIGHT * CELLSIZE; y += CELLSIZE) {
         ctx.fillRect(camX, y - 1, PLAYGROUND_WIDTH * CELLSIZE, 2);
     }
-    //#endregion
-    //#endregion
+    //endregion
+    //endregion
     requestAnimationFrame(loop);
 }
 requestAnimationFrame(loop);
@@ -209,6 +216,7 @@ document.addEventListener("mousedown", (e) => {
         mouseLeft = true;
         mouseCamOffsetX = camX - mouseX;
         mouseCamOffsetY = camY - mouseY;
+        cells[mouseCellX][mouseCellY] = 1 - cells[mouseCellX][mouseCellY];
     }
 });
 document.addEventListener("mouseup", (e) => {
